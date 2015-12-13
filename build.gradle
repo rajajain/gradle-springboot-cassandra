@@ -56,10 +56,6 @@ dependencies {
     }
     compile("org.springframework.boot:spring-boot-starter-actuator")
     compile("org.springframework.data:spring-data-cassandra:1.0.0.RELEASE")
-    compile("org.springframework:spring-remoting:2.0.8") {
-        exclude module: "org.springframework:spring-web"
-        exclude module: "javax.servlet:servlet-api"
-    }
 
 }
 
@@ -79,9 +75,6 @@ jar {
             'Implementation-Version': version,
             'Main-Class': 'portal.IngestDataUsingSpringTemplate',
             'Class-Path': classpath)
-    from configurations.compile.each { zipTree it }
-    doLast { classpath }
-
 
 }
 // Run with "gradle start --debug-jvm" to start the program in debug mode
