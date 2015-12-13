@@ -1,0 +1,106 @@
+apply plugin: 'java'
+sourceCompatibility = 1.7
+version = '1.0'
+
+sourceSets {
+    main.java.srcDir "src"
+}
+
+apply plugin: 'maven'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+apply plugin: "io.spring.dependency-management"
+apply plugin: 'application'
+
+def env = System.properties['env']
+sourceSets {
+    main.java.srcDir "src"
+    if (env == null) {
+        main.resources.srcDir "config/dev"
+    } else {
+        main.resources.srcDir "config/" + env
+    }
+
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.3.0.RELEASE")
+    }
+}
+
+repositories {
+
+    mavenLocal()
+    jcenter()
+    maven { url "http://repo.spring.io/snapshot" }
+    maven { url "http://repo.spring.io/milestone" }
+
+    mavenCentral()
+
+
+}
+
+
+dependencies {
+
+    compile("org.springframework.boot:spring-boot-starter-web:1.3.0.RELEASE") {
+        exclude module: "spring-boot-starter-tomcat"
+        exclude module: "javax.servlet:servlet-api"
+        exclude module: "org.springframework:spring-web"
+        exclude module: "org.springframework:spring-webmvc"
+    }
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile("org.springframework.data:spring-data-cassandra:1.0.0.RELEASE")
+    compile("org.springframework:spring-remoting:2.0.8") {
+        exclude module: "org.springframework:spring-web"
+        exclude module: "javax.servlet:servlet-api"
+    }
+
+}
+
+def getClasspathStringJars() {
+    def baseFolder = ''
+    def fileNames = []
+    configurations.compile.each { File file -> fileNames.add(baseFolder + file.name) }
+
+    def classpath = fileNames.join(";")
+    return classpath
+}
+
+jar {
+
+    def classpath = '. ; ' + getClasspathStringJars() + ' ; '
+    manifest.attributes('Implementation-Title': 'io-netty-4',
+            'Implementation-Version': version,
+            'Main-Class': 'portal.IngestDataUsingSpringTemplate',
+            'Class-Path': classpath)
+    from configurations.compile.each { zipTree it }
+    doLast { classpath }
+
+
+}
+// Run with "gradle start --debug-jvm" to start the program in debug mode
+task start(type: JavaExec, dependsOn: classes) {
+    main 'portal.IngestDataUsingSpringTemplate'
+    classpath sourceSets.main.runtimeClasspath
+    args '8989'
+    applicationDefaultJvmArgs = [
+            " -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
+    ]
+}
+
+
+task startServer(type: Exec, dependsOn: jar) {
+
+    executable 'java'
+    args '-jar', "$jar.archivePath", '8888'
+}
+
+applicationDefaultJvmArgs = [
+        " -Dlogback.configurationFile=MY_APP_HOME/logback.xml -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
+]
