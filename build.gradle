@@ -55,7 +55,12 @@ dependencies {
         exclude module: "org.springframework:spring-webmvc"
     }
     compile("org.springframework.boot:spring-boot-starter-actuator")
-    compile("org.springframework.data:spring-data-cassandra:1.0.0.RELEASE")
+    compile("org.springframework.data:spring-data-cassandra:1.0.0.RELEASE"){
+        exclude module: "spring-data-cassandra"
+        exclude module: "spring-data-commons"
+    }
+    compile("org.springframework.data:spring-data-cassandra:1.1.0.RELEASE")
+    compile("org.springframework.data:spring-data-commons:1.8.0.RELEASE")
 
 }
 
